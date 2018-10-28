@@ -21,6 +21,7 @@ int main( int argc, char * argv[] )
     Sheet.AddCell( "Scaled image:" );
     Sheet.EndRow();
 
+    // TODO: set image path
     Book.AddImage( Sheet, "Image.gif", DrawingPoint( 0, 1 ) );
     Book.AddImage( Sheet, "Image.jpg", DrawingPoint( 0, 4 ) );
     Book.AddImage( Sheet, "Image.png", DrawingPoint( 0, 7 ) );

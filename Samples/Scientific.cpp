@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include <Xlsx/Xlsx/Chart.h>
+#include <Xlsx/Chart.h>
 #include <Xlsx/Chartsheet.h>
 #include <Xlsx/Workbook.h>
 #include <XLSXColors/XLSXColorLib.h>
