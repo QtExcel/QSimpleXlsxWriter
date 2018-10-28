@@ -7,7 +7,7 @@
 	- Brought to you by: [oxod](https://sourceforge.net/u/oxod/), [programmeralex](https://sourceforge.net/u/programmeralex/)
 	- The main feature of this library is that it uses C++ standard file streams. On the one hand it results in almost unnoticeable memory and CPU resources consumption while processing (that may be very useful at saving a large data arrays), but on the other hand it makes unfeasible to edit data that were written. Hence, if using this library the structure of the future report should be known enough.
 
-## Hello World (HelloQSimpleXlsxWriter)	
+## Hello World (Simple.cpp)
 
 ```cpp
 #include <iostream>
@@ -137,6 +137,6 @@ int main( int argc, char * argv[] )
 ```
 
 ## License and links
-- QSimpleXlsxWriter is under MIT license.
-- SimpleXlsxWriter is under zlib license.
-- zlib is under zlib license.
+- QSimpleXlsxWriter is under MIT license. [https://github.com/j2doll/QSimpleXlsxWriter](https://github.com/j2doll/QSimpleXlsxWriter)
+- SimpleXlsxWriter is under zlib license. [https://sourceforge.net/projects/simplexlsx/](https://sourceforge.net/projects/simplexlsx/)
+- zlib is under zlib license. [https://zlib.net/](https://zlib.net/)
