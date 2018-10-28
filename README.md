@@ -11,133 +11,130 @@
 ## Hello World (HelloQSimpleXlsxWriter)	
 
 ```cpp
-	#include <iostream>
-	#include <stdio.h>
-	#include <stdlib.h>
-	#include <time.h>
+#include <iostream>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
-    #include <Xlsx/Workbook.h>
+#include <Xlsx/Workbook.h>
 
-    using namespace std;
-    using namespace SimpleXlsx;
+using namespace SimpleXlsx;
 
-    int main()
-    {
-       srand(time(NULL));
-       const int colNum = 20;
-       const int rowNum = 10;
+int main( int argc, char * argv[] )
+{
+    ( void )argc; ( void )argv;
 
-       CWorkbook book;
+    setlocale( LC_ALL, "" );
 
-       {    // Creating a simple data sheet
-            CWorksheet &sheet = book.AddSheet(_T("New sheet simple"));
+    time_t CurrentTime = time( NULL );
 
-            vector<CellDataDbl> data;   // (data:style_index)
-            CellDataDbl def;
-            def.style_id = 0;       // 0,1 - default styles
-            for (int i = 0; i < colNum; i++) {
-                def.value = (double)(rand() % 100) / 101.0;
-                data.push_back(def);
-            }
+    CWorkbook book( "Incognito" );
 
-            for (int i = 0; i < rowNum; i++)
-                sheet.AddRow(data);
-       }
+    std::vector<ColumnWidth> ColWidth;
+    ColWidth.push_back( ColumnWidth( 0, 3, 20 ) );
+    CWorksheet & Sheet = book.AddSheet( "Unicode", ColWidth );
 
-       {    // Creating data sheet with a frozen pane
-            CWorksheet &sheet = book.AddSheet(_T("New sheet with frozen pane"), 0, 1);
+    Style style;
+    style.horizAlign = ALIGN_H_CENTER;
+    style.font.attributes = FONT_BOLD;
+    size_t CenterStyleIndex = book.AddStyle( style );
 
-            vector<CellDataStr> dataStr;// (data:style_index)
-            CellDataStr col;
+    Sheet.BeginRow();
+    Sheet.AddCell( "Common test of Unicode support", CenterStyleIndex );
+    Sheet.MergeCells( CellCoord( 1, 0 ), CellCoord( 1, 3 ) );
+    Sheet.EndRow();
 
-            col.value = _T("Frozen pane header");
-            col.style_id = 0;       // 0,1 - default styles
-            dataStr.push_back(col);
-            sheet.AddRow(dataStr);
-            sheet.MergeCells(CellCoord(1, 0), CellCoord(1, colNum-1)); // merge first row
+    Font TmpFont = book.GetFonts().front();
+    TmpFont.attributes = FONT_ITALIC;
+    Comment Com;
+    Com.x = 250;
+    Com.y = 100;
+    Com.width = 100;
+    Com.height = 30;
+    Com.cellRef = CellCoord( 8, 1 );
+    Com.isHidden = false;
+    Com.AddContent( TmpFont, "Comment with custom style" );
+    Sheet.AddComment( Com );
 
-            vector<CellDataInt> data;   // (data:style_index)
-            CellDataInt def;
-            def.style_id = 0;       // 0,1 - default styles
-            for (int i = 0; i < colNum; i++) {
-                def.value = (double)(rand() % 100);
-                data.push_back(def);
-            }
+    Sheet.BeginRow();
+    Sheet.AddCell( "English language" );
+    Sheet.AddCell( "English language" );
+    Sheet.EndRow();
 
-            for (int i = 0; i < rowNum; i++)
-                sheet.AddRow(data);
-       }
+    Sheet.BeginRow();
+    Sheet.AddCell( "Russian language" );
+    Sheet.AddCell( L"Русский язык" );
+    Sheet.EndRow();
 
-       {    // Creating data sheet with col and row specified sizes
-            std::vector<ColumnWidth> colWidths;
-            for (int i = 0; i < 50; i++) {
-                ColumnWidth colWidth;
-                colWidth.colFrom = colWidth.colTo = i;
-                colWidth.width = i + 10;
-                colWidths.push_back(colWidth);
-            }
+    Sheet.BeginRow();
+    Sheet.AddCell( "Chinese language" );
+    Sheet.AddCell( L"中文" );
+    Sheet.EndRow();
 
-            CWorksheet &sheet = book.AddSheet(_T("New sheet with column and row specified sizes"), colWidths);
+    Sheet.BeginRow();
+    Sheet.AddCell( "French language" );
+    Sheet.AddCell( L"le français" );
+    Sheet.EndRow();
 
-            Style style;
-            style.wrapText = true;
-            int style_index = book.m_styleList.Add(style);
+    Sheet.BeginRow();
+    Sheet.AddCell( "Arabic language" );
+    Sheet.AddCell( L"العَرَبِيَّة‎‎" );
+    Sheet.EndRow();
 
-            vector<CellDataStr> data;   // (data:style_index)
-            CellDataStr def;
-            def.style_id = style_index; // 0,1 - default styles
-            data.push_back(def);
-                TCHAR szText[30] = { 0 };
-            for (int i = 0; i < colNum; i++) {
-                _stprintf(szText, _T("some\nmultirow\ntext %d_%d"), i+10, i);
-                def.value = szText;
-                data.push_back(def);
-            }
+    Sheet.BeginRow();
+    Sheet.EndRow();
 
-            for (int i = 0; i < rowNum; i++)
-                sheet.AddRow(data, 0, 45);
-       }
+    style.fill.patternType = PATTERN_NONE;
+    style.font.theme = true;
+    style.horizAlign = ALIGN_H_RIGHT;
+    style.vertAlign = ALIGN_V_CENTER;
 
-        {   // Creating data sheet with styled cells
-            CWorksheet &sheet = book.AddSheet(_T("New sheet with styled cells"));
+    style.numFormat.numberStyle = NUMSTYLE_MONEY;
 
-            Style style;
-            style.fill.patternType = PATTERN_NONE;
-            style.font.size = 14;
-            style.font.theme = true;
-            style.font.attributes = FONT_BOLD;
-            style.horizAlign = ALIGN_H_RIGHT;
-            style.vertAlign = ALIGN_V_CENTER;
-            int style_index_1 = book.m_styleList.Add(style);
+    size_t MoneyStyleIndex = book.AddStyle( style );
 
-            style.fill.patternType = PATTERN_NONE;
-            style.font.size = 14;
-            style.font.theme = true;
-            style.font.attributes = FONT_ITALIC;
-            style.horizAlign = ALIGN_H_LEFT;
-            style.vertAlign = ALIGN_V_CENTER;
-            int style_index_2 = book.m_styleList.Add(style);
+    Sheet.BeginRow();
+    Sheet.AddCell( "Money symbol" );
+    Sheet.AddCell( 123.45, MoneyStyleIndex );
+    Sheet.EndRow();
 
-            vector<CellDataFlt> data;
-            CellDataFlt def;
-            for (int i = 0; i < colNum; i++) {
-                def.value = (double)(rand() % 100) / 101.0;
-                if (i % 2 == 0) def.style_id = style_index_1;
-                else        def.style_id = style_index_2;
+    style.numFormat.numberStyle = NUMSTYLE_DATETIME;
+    size_t DateTimeStyleIndex = book.AddStyle( style );
 
-                data.push_back(def);
-            }
+    Sheet.BeginRow();
+    Sheet.AddCell( "Write date/time" );
+    Sheet.AddCell( CurrentTime, DateTimeStyleIndex );
+    Sheet.EndRow();
 
-            for (int i = 0; i < rowNum; i++)
-                sheet.AddRow(data, 5);
-       }
+    style.numFormat.formatString = "hh:mm:ss";
+    size_t CustomDateTimeStyleIndex = book.AddStyle( style );
+    Sheet.BeginRow();
+    Sheet.AddCell( "Custom date/time" );
+    Sheet.AddCell( CurrentTime, CustomDateTimeStyleIndex );
+    Sheet.EndRow();
 
-       bool bRes = book.Save(_T("MyBook.xlsx"));
-       if (bRes)   cout << "The book has been saved successfully";
-       else        cout << "The book saving has been failed";
+    Sheet.BeginRow();
+    Sheet.EndRow();
 
-       return 0;
-    }
+    Style stPanel;
+    stPanel.border.top.style = BORDER_THIN;
+    stPanel.border.bottom.color = "FF000000";
+    stPanel.fill.patternType = PATTERN_SOLID;
+    stPanel.fill.fgColor = "FFCCCCFF";
+    size_t PanelStyleIndex = book.AddStyle( stPanel );
+    Sheet.BeginRow();
+    Sheet.AddCell( "Cells with border", PanelStyleIndex );
+    Sheet.AddCell( "", PanelStyleIndex );
+    Sheet.AddCell( "", PanelStyleIndex );
+    Sheet.AddCell( "", PanelStyleIndex );
+    Sheet.EndRow();
+
+    if( book.Save( "Simple.xlsx" ) ) std::cout << "The book has been saved successfully" << std::endl;
+    else std::cout << "The book saving has been failed" << std::endl;
+
+    return 0;
+}
 ```
 
 ## License and links
