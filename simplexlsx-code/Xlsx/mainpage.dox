@@ -1,0 +1,28 @@
+/**
+\mainpage The mainpage documentation
+
+This library represents XLSX files writer for Microsoft Excel 2007 and above. 
+
+The main feature of this library is that it uses C++ standard file streams. On the one hand it results in almost unnoticeable memory and CPU resources consumption while processing (that may be very useful at saving a large data arrays), but on the other hand it makes unfeasible to edit data that were written.
+Hence, if using this library the structure of the future report should be known enough.
+
+The library is written in C++ with using STL functionality and based on the ZIP library (included), which has a free license.
+
+http://www.codeproject.com/Articles/7530/Zip-Utils-clean-elegant-simple-C-Win32
+
+Key features:
+- Cell styles: fonts, fills, borders, alignment, multirow text
+- Cell formats: text, numeric, dates and times, custom formats
+- Formulae recognition (without formula`s content verification)
+- Multi-sheets
+- Charts with customizable parameters (on data sheet or separate sheet): linear, bar, scatter
+- Images on the worksheet: gif, jpg, jpeg, png, tif, tiff
+- Multiplatform: BSD, Linux, Windows
+- No external dependencies.
+
+The Simple DirectMedia Layer library source code is available from:
+https://sourceforge.net/projects/simplexlsx/
+
+This library is distributed under the terms of the zlib license:
+http://www.zlib.net/zlib_license.html
+*/
