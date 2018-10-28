@@ -2,6 +2,8 @@
 # QSimpleXlsxWriter.pri
 #
 
+CONFIG += c++11
+
 isEmpty(SIMPLE_XLSX_WRITER_PARENTPATH) {
     message( 'SIMPLE_XLSX_WRITER_PARENTPATH is empty. use default value.' )
     SIMPLE_XLSX_WRITER_PARENTPATH = ../simplexlsx-code/
