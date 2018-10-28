@@ -1,8 +1,8 @@
 #
-# Hello.pro
+# Simple.pro
 # 
 
-TARGET = Hello
+TARGET = Simple
 
 CONFIG += console
 CONFIG -= app_bundle

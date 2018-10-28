@@ -1,8 +1,8 @@
 #
-# Hello.pro
+# MultiCharts.pro
 # 
 
-TARGET = Hello
+TARGET = MultiCharts
 
 CONFIG += console
 CONFIG -= app_bundle
@@ -15,4 +15,5 @@ DEFINES += QT_DEPRECATED_WARNINGS
 include(../QSimpleXlsxWriter/QSimpleXlsxWriter.pri)
 
 SOURCES += \
-Simple.cpp
+MultiCharts.cpp
+
