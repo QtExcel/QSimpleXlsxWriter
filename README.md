@@ -3,9 +3,8 @@
 ## Introduction
 
 - Use SimpleXlsxWriter in Qt. 
-- [SimpleXlsxWriter](https://sourceforge.net/projects/simplexlsx/)
-	- C++ library for creating XLSX files for MS Excel 2007 and above.
-	- Brought to you by: oxod, programmeralex
+- [SimpleXlsxWriter](https://sourceforge.net/projects/simplexlsx/) is C++ library for creating XLSX files for MS Excel 2007 and above.
+	- Brought to you by: [oxod](https://sourceforge.net/u/oxod/), [programmeralex](https://sourceforge.net/u/programmeralex/)
 	- The main feature of this library is that it uses C++ standard file streams. On the one hand it results in almost unnoticeable memory and CPU resources consumption while processing (that may be very useful at saving a large data arrays), but on the other hand it makes unfeasible to edit data that were written. Hence, if using this library the structure of the future report should be known enough.
 
 ## Hello World (HelloQSimpleXlsxWriter)	
