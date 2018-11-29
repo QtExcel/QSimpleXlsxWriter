@@ -1,0 +1,57 @@
+# .travis.yml (Travis CI)
+#
+# QSimpleXlsxWriter
+# https://github.com/j2doll/QSimpleXlsxWriter
+#
+
+language: c++
+compiler: gcc
+sudo: require
+dist: xenial # Ubuntu Xenial 16.04, Trusty 14.04, Precise 12.04
+
+before_install:
+  - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
+  - sudo apt-get update -qq
+
+  # zlib
+  # - sudo apt-get install zlib1g
+  # - sudo apt-get install zlib1g-dev
+
+  - sudo apt-get install build-essential
+
+  # Qt 5
+  - sudo apt-get install qtbase5-dev qtdeclarative5-dev 
+  - sudo apt-get install qt5-default qttools5-dev-tools 
+
+install:
+
+script:
+
+  # lib
+  - cd QSimpleXlsxWriter
+  - qmake QSimpleXlsxWriter.pro
+  - make 
+
+  # samples
+  - cd ../Samples
+
+  - qmake Simple.pro
+  - make
+  - make clean
+  - ./Simple
+
+  - qmake Images.pro
+  - make
+  - make clean
+  - ./Images
+
+  - qmake MultiCharts.pro
+  - make
+  - make clean
+  - ./MultiCharts
+
+  - qmake Scientific.pro
+  - make
+  - make clean
+  - ./Scientific
+  
