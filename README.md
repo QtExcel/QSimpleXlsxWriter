@@ -1,5 +1,7 @@
 # QSimpleXlsxWriter
 
+[![Build Status](https://travis-ci.com/j2doll/QSimpleXlsxWriter.svg?branch=master)](https://travis-ci.com/j2doll/QSimpleXlsxWriter)
+
 ## Introduction
 
 - Use SimpleXlsxWriter in Qt. 
