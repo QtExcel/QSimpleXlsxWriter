@@ -1,7 +1,5 @@
 # QSimpleXlsxWriter
 
-[![Build Status](https://travis-ci.com/j2doll/QSimpleXlsxWriter.svg?branch=master)](https://travis-ci.com/j2doll/QSimpleXlsxWriter)
-
 ## Introduction
 
 - Use SimpleXlsxWriter in Qt. 
@@ -138,33 +136,39 @@ int main( int argc, char * argv[] )
 }
 ```
 
+## Test
+
+| Travis CI |
+| :-------: |
+| [![Build Status](https://travis-ci.com/QtExcel/QSimpleXlsxWriter.svg?branch=master)](https://travis-ci.com/QtExcel/QSimpleXlsxWriter) |
+
 ## License and links
-- QSimpleXlsxWriter is under MIT license. [https://github.com/j2doll/QSimpleXlsxWriter](https://github.com/j2doll/QSimpleXlsxWriter)
+- QSimpleXlsxWriter is under MIT license. [https://github.com/QtExcel/QSimpleXlsxWriter](https://github.com/QtExcel/QSimpleXlsxWriter)
 - SimpleXlsxWriter is under zlib license. [https://sourceforge.net/projects/simplexlsx/](https://sourceforge.net/projects/simplexlsx/)
 - zlib is under zlib license. [https://zlib.net/](https://zlib.net/)
 
 ## Similar projects
 
-### :star: <b>QXlsx</b> [https://github.com/j2doll/QXlsx](https://github.com/j2doll/QXlsx)
+### :star: <b>QXlsx</b> [https://github.com/QtExcel/QXlsx](https://github.com/QtExcel/QXlsx)
 
-<p align="center"><img src="https://github.com/j2doll/QXlsx/raw/master/markdown.data/QXlsx-Desktop.png"></p>
+<p align="center"><img src="https://github.com/QtExcel/QXlsx/raw/master/markdown.data/QXlsx-Desktop.png"></p>
 
 - QXlsx is excel file(*.xlsx) reader/writer library.
 - Because QtXlsx is no longer supported(2014), I created a new project that is based on QtXlsx. (2017-)
 - Development language of QXlsx is C++. (with Qt)
 - You don't need to use static library or dynamic shared object using QXlsx.
 
-### :star: <b>Qxlnt</b> [https://github.com/j2doll/Qxlnt](https://github.com/j2doll/Qxlnt)
+### :star: <b>Qxlnt</b> [https://github.com/QtExcel/Qxlnt](https://github.com/QtExcel/Qxlnt)
 
-<p align="center"><img src="https://github.com/j2doll/Qxlnt/raw/master/markdown-data/Concept-QXlnt.jpg"></p>
+<p align="center"><img src="https://github.com/QtExcel/Qxlnt/raw/master/markdown-data/Concept-QXlnt.jpg"></p>
 
 - Qxlnt is a helper project that allows xlnt to be used in Qt.
 - xlnt is a excellent C++ library for using xlsx Excel files. :+1:
 - I was looking for a way to make it easy to use in Qt. Of course, cmake is compatible with Qt, but it is not convenient to use. So I created Qxlnt.
 
-### :star: <b>Qlibxlsxwriter</b> [https://github.com/j2doll/Qlibxlsxwriter](https://github.com/j2doll/Qlibxlsxwriter)
+### :star: <b>Qlibxlsxwriter</b> [https://github.com/QtExcel/Qlibxlsxwriter](https://github.com/QtExcel/Qlibxlsxwriter)
 
-<p align="center"><img src="https://github.com/j2doll/Qlibxlsxwriter/raw/master/markdown.data/logo.png"></p>
+<p align="center"><img src="https://github.com/QtExcel/Qlibxlsxwriter/raw/master/markdown.data/logo.png"></p>
 
 - Qlibxlsxwriter is a helper project that allows libxlsxwriter to be used in Qt.
 - libxlsxwriter is a C library for creating Excel XLSX files. :+1:
