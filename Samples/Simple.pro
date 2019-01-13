@@ -1,6 +1,8 @@
 #
 # Simple.pro
-# 
+#
+# QSimpleXlsxWriter https://github.com/QtExcel/QSimpleXlsxWriter
+#
 
 TARGET = Simple
 

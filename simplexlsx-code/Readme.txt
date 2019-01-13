@@ -24,6 +24,10 @@ https://sourceforge.net/projects/simplexlsx/
 This library is distributed under the terms of the zlib license:
 http://www.zlib.net/zlib_license.html
 
+2018-11-03 Version 0.32
+	Change log:
+		- Added field "count" in xml for style indexes (thanks for this work to mt1710).
+
 2018-10-02 Version 0.31
 	Change log:
 		- Refactoring code for possibility to make mixed debug/release compilation of the library and of the main program (thanks to E.Naumovich).

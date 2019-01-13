@@ -872,8 +872,8 @@ namespace SimpleXlsx
         xmlw.TagL( "xf" ).Attr( "numFmtId", 0 ).Attr( "fontId", 0 ).Attr( "fillId", 0 ).Attr( "borderId", 0 ).EndL();
         xmlw.End( "cellStyleXfs" );
 
-        xmlw.Tag( "cellXfs" );
         const std::vector<std::vector<size_t> > & styleIndexes = m_styleList.GetIndexes();
+        xmlw.Tag( "cellXfs" ).Attr( "count", styleIndexes.size() );
         const std::vector< std::pair<std::pair<EAlignHoriz, EAlignVert>, bool> > & styleAligns = m_styleList.GetPositions();
         assert( styleIndexes.size() == styleAligns.size() );
         for( size_t i = 0; i < styleIndexes.size(); i++ )
