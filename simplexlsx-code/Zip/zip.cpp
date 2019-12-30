@@ -5,7 +5,12 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
-//#include <cwchar>
+
+#ifdef __APPLE__
+#include <fcntl.h>
+#include <sys/param.h>
+#endif
+
 #include <wchar.h>
 #include <stdlib.h>
 #include <string.h>
@@ -2252,12 +2257,17 @@ ZRESULT GetFileInfo(HANDLE hf, ulg *attr, long *size, iztimes *times, ulg *times
     *timestamp = (WORD)dostime | (((DWORD)dosdate)<<16);
   }
 #else
-  //TCHAR szLink[MAX_PATH] = { 0 };
+#ifdef __APPLE__
+    char fn[MAXPATHLEN] = { 0 };
+    if (fcntl(fileno((FILE*)hf), F_GETPATH, fn) == -1)
+      return ZR_NOFILE;
+#else
     char szLink[MAX_PATH] = { 0 };
-  //TCHAR fn[MAX_PATH] = { 0 };
     char fn[MAX_PATH] = { 0 };
-  snprintf( szLink, MAX_PATH, "/proc/self/fd/%d", fileno( (FILE*)hf ) );
-  if (readlink(szLink, fn, sizeof(fn)) == -1) return ZR_NOFILE;
+    snprintf( szLink, MAX_PATH, "/proc/self/fd/%d", fileno( (FILE*)hf ) );
+    if (readlink(szLink, fn, sizeof(fn)) == -1)
+      return ZR_NOFILE;
+#endif
 
   struct stat s;
   int res=stat(fn,&s);

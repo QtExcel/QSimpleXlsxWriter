@@ -80,7 +80,7 @@ namespace SimpleXlsx
         std::stringstream TmpStringStream;
 #ifdef _WIN32
         m_temp_path = getenv( "TEMP" );
-        TmpStringStream << "/xlsx_" << GetCurrentThreadId() << "_" << std::clock();
+        TmpStringStream << "xlsx_" << GetCurrentThreadId() << "_" << std::clock();
 #else
 
         const int EnvVarCount = 4;
@@ -94,9 +94,12 @@ namespace SimpleXlsx
                 break;
             }
         }
-        if( m_temp_path.empty() ) m_temp_path = "/tmp";
-        TmpStringStream << "/xlsx_" << syscall( SYS_gettid ) << "_" << std::clock();
+        if( m_temp_path.empty() )
+            m_temp_path = "/tmp";
+        TmpStringStream << "xlsx_" << std::abs( syscall( SYS_gettid ) ) << "_" << std::clock();
 #endif
+        if( m_temp_path[ m_temp_path.size() - 1 ] != '/' )
+            m_temp_path += "/";
         m_temp_path += TmpStringStream.str();
 
         //Check the UserName

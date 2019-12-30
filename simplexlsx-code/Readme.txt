@@ -12,9 +12,9 @@ Key features:
 - Cell formats: text, numeric, dates and times, custom formats
 - Formulae recognition (without formula`s content verification)
 - Multi-sheets
-- Charts with customizable parameters (on data sheet or separate sheet): linear, bar, scatter
+- Charts with customizable parameters (on data sheet or separate sheet): linear, bar, scatter, pie
 - Images on the worksheet: gif, jpg, jpeg, png, tif, tiff
-- Multiplatform: BSD, Linux, Windows
+- Multiplatform: BSD, Linux, macOS, Windows
 - Unicode support
 - No external dependencies
 
@@ -23,6 +23,15 @@ https://sourceforge.net/projects/simplexlsx/
 
 This library is distributed under the terms of the zlib license:
 http://www.zlib.net/zlib_license.html
+
+2019-12-15 Version 0.33
+	Change log:
+		- Fixed the precision of saving floating point numbers (thanks for this work to Norbert Wołowiec).
+		- Added Pie chart (thanks to W Semmelink).
+		- Updated examples (thanks to W Semmelink).
+		- Added references to self in class methods of CWorkbook, CWorksheet and CChart.
+		- CWorksheet::AddCell( time_t ) method has been removed due to a conflict types. CWorksheet::AddCell( CellDataTime ) method remained.
+		- Added macOS support.
 
 2018-11-03 Version 0.32
 	Change log:
