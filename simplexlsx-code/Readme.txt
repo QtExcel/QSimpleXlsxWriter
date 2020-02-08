@@ -8,9 +8,9 @@ The library is written in C++ with using STL functionality and based on the ZIP 
 http://www.codeproject.com/Articles/7530/Zip-Utils-clean-elegant-simple-C-Win32
 
 Key features:
-- Cell styles: fonts, fills, borders, alignment, multirow text
+- Cell styles: fonts, fills, borders, alignment, multirow text, text rotation
 - Cell formats: text, numeric, dates and times, custom formats
-- Formulae recognition (without formula`s content verification)
+- Formulae recognition (without formula`s content verification), defined names
 - Multi-sheets
 - Charts with customizable parameters (on data sheet or separate sheet): linear, bar, scatter, pie
 - Images on the worksheet: gif, jpg, jpeg, png, tif, tiff
@@ -23,6 +23,15 @@ https://sourceforge.net/projects/simplexlsx/
 
 This library is distributed under the terms of the zlib license:
 http://www.zlib.net/zlib_license.html
+
+2020-02-05 Version 0.34
+		- The CellDataTime class has been redesigned to be able to set the date and time in various ways (thanks to E.Naumovich).
+                - Added defined names (thanks to E.Naumovich).
+		- Added functions AddEmptyRow, AddEmptyRows and AddSimpleRow to CWorksheet class.
+                - Reworked getting currency symbol under Windows.
+                - Added text rotation to cell style.
+                - Added SimpleXlsxDef.cpp.
+                - Updated examples.
 
 2019-12-15 Version 0.33
 	Change log:

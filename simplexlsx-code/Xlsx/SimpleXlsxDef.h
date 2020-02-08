@@ -1,6 +1,6 @@
 /*
   SimpleXlsxWriter
-  Copyright (C) 2012-2018 Pavel Akimov <oxod.pavel@gmail.com>, Alexandr Belyak <programmeralex@bk.ru>
+  Copyright (C) 2012-2020 Pavel Akimov <oxod.pavel@gmail.com>, Alexandr Belyak <programmeralex@bk.ru>
 
   This software is provided 'as-is', without any express or implied
   warranty. In no event will the authors be held liable for any damages
@@ -23,6 +23,7 @@
 #define XLSX_SIMPLE_XLSX_DEF_H
 
 #include <stdint.h>
+#include <cassert>
 #include <ctime>
 #include <fstream>
 #include <list>
@@ -32,9 +33,17 @@
 #include <vector>
 #include <utility>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+#ifdef QT_CORE_LIB
+#include <QDateTime>
+#endif
+
 #include "../UTF8Encoder.hpp"
 
-#define SIMPLE_XLSX_VERSION	"0.33"
+#define SIMPLE_XLSX_VERSION	"0.34"
 
 namespace SimpleXlsx
 {
@@ -56,19 +65,22 @@ class UniString
             m_string = UTF8Encoder::From_wstring( m_wstring );
         }
 
-            // *INDENT-OFF*   For AStyle tool
-            inline bool empty() const   {   return m_string.empty();    }
+        // *INDENT-OFF*   For AStyle tool
+        inline bool empty() const   {   return m_string.empty();    }
 
-            inline operator const std::string & () const    {   return m_string;    }
-            inline operator const std::wstring & () const   {   return m_wstring;   }
+        inline operator const std::string & () const    {   return m_string;    }
+        inline operator const std::wstring & () const   {   return m_wstring;   }
 
-            inline bool operator==( const std::string & other ) const   {   return m_string == other;   }
-            inline bool operator!=( const std::string & other ) const   {   return !( *this == other ); }
-            inline bool operator==( const std::wstring & other ) const  {   return m_wstring == other;  }
-            inline bool operator!=( const std::wstring & other ) const  {   return !( *this == other ); }
-            inline bool operator==( const UniString & other ) const     {   return *this == other.m_string; }
-            inline bool operator!=( const UniString & other ) const     {   return !( *this == other ); }
-            // *INDENT-ON*   For AStyle tool
+        inline const std::string & toStdString() const      {   return m_string;    }
+        inline const std::wstring & toStdWString() const    {   return m_wstring;   }
+
+        inline bool operator==( const std::string & other ) const   {   return m_string == other;   }
+        inline bool operator!=( const std::string & other ) const   {   return !( *this == other ); }
+        inline bool operator==( const std::wstring & other ) const  {   return m_wstring == other;  }
+        inline bool operator!=( const std::wstring & other ) const  {   return !( *this == other ); }
+        inline bool operator==( const UniString & other ) const     {   return *this == other.m_string; }
+        inline bool operator!=( const UniString & other ) const     {   return !( *this == other ); }
+        // *INDENT-ON*   For AStyle tool
 
         UniString & operator=( const char * other )
         {
@@ -238,20 +250,9 @@ class Font
             Clear();
         }
 
-        void Clear()
-        {
-            size = 11;
-            name = "Calibri";
-            theme = true;
-            color = "";
-            attributes = FONT_NORMAL;
-        }
+        void Clear();
 
-        bool operator==( const Font & _font ) const
-        {
-            return ( ( size == _font.size ) && ( name == _font.name ) && ( theme == _font.theme ) &&
-                     ( color == _font.color ) && ( attributes == _font.attributes ) );
-        }
+        bool operator==( const Font & _font ) const;
 };
 
 /// @brief  Fill describes a fill that can be added into final document stylesheet
@@ -267,17 +268,9 @@ class Fill
     public:
         Fill() : patternType( PATTERN_NONE ), fgColor( "" ), bgColor( "" ) {}
 
-        void Clear()
-        {
-            patternType = PATTERN_NONE;
-            fgColor = "";
-            bgColor = "";
-        }
+        void Clear();
 
-        bool operator==( const Fill & _fill ) const
-        {
-            return ( ( patternType == _fill.patternType ) && ( fgColor == _fill.fgColor ) && ( bgColor == _fill.bgColor ) );
-        }
+        bool operator==( const Fill & _fill ) const;
 };
 
 /// @brief  Border describes a border style that can be added into final document stylesheet
@@ -320,23 +313,9 @@ class Border
             Clear();
         }
 
-        void Clear()
-        {
-            isDiagonalUp = false;
-            isDiagonalDown = false;
+        void Clear();
 
-            left.Clear();
-            right.Clear();
-            bottom.Clear();
-            top.Clear();
-        }
-
-        bool operator==( const Border & _border ) const
-        {
-            return ( ( isDiagonalUp == _border.isDiagonalUp ) && ( isDiagonalDown == _border.isDiagonalDown ) &&
-                     ( left == _border.left ) && ( right == _border.right ) &&
-                     ( bottom == _border.bottom ) && ( top == _border.top ) );
-        }
+        bool operator==( const Border & _border ) const;
 };
 
 /// @brief	NumFormat helps to create a customized number format
@@ -360,68 +339,22 @@ class NumFormat
             Clear();
         }
 
-        void Clear()
-        {
-            id = 164;
-            formatString = "";
+        void Clear();
 
-            numberStyle = NUMSTYLE_GENERAL;
-            positiveColor = NUMSTYLE_COLOR_DEFAULT;
-            negativeColor = NUMSTYLE_COLOR_DEFAULT;
-            zeroColor = NUMSTYLE_COLOR_DEFAULT;
-            showThousandsSeparator = false;
-            numberOfDigitsAfterPoint = 2;
-        }
-
-        bool operator==( const NumFormat & _num ) const
-        {
-            return ( ( formatString == _num.formatString ) &&
-                     ( numberStyle == _num.numberStyle ) && ( numberOfDigitsAfterPoint == _num.numberOfDigitsAfterPoint ) &&
-                     ( positiveColor == _num.positiveColor ) && ( negativeColor == _num.negativeColor ) &&
-                     ( zeroColor == _num.zeroColor ) && ( showThousandsSeparator == _num.showThousandsSeparator ) );
-        }
-};
-
-/// @brief  Style describes a set of styling parameter that can be used into final document
-/// @see    EBorder
-/// @see    EAlignHoriz
-/// @see    EAlignVert
-class Style
-{
-    public:
-        Font font;				///< font structure object describes font
-        Fill fill;				///< fill structure object describes fill
-        Border border;			///< border combination of border attributes
-        NumFormat numFormat;	///< numFormat structure object describes numeric cell representation
-        EAlignHoriz horizAlign;	///< horizAlign cell content horizontal alignment value
-        EAlignVert vertAlign;	///< vertAlign cell content vertical alignment value
-        bool wrapText;			///< wrapText text wrapping property
-
-    public:
-        Style()
-        {
-            Clear();
-        }
-
-        void Clear()
-        {
-            font.Clear();
-            fill.Clear();
-            border.Clear();
-            horizAlign = ALIGN_H_NONE;
-            vertAlign = ALIGN_V_NONE;
-            wrapText = false;
-        }
+        bool operator==( const NumFormat & _num ) const;
 };
 
 /// @brief	Cell coordinate structure
 class CellCoord
 {
+        static const uint8_t ColStrOffset = 11;
+
     public:
+        typedef char TConvBuf[ 24 ];    // Max string for $Col$Row\0
+        static const uint32_t   MaxRows = 1048576, MaxCols = 16384; // Excel limits
         uint32_t row;	///< row (starts from 1)
         uint32_t col;	///< col (starts from 0)
 
-    public:
         CellCoord() : row( 1 ), col( 0 ) {}
         CellCoord( uint32_t _r, uint32_t _c ) : row( _r ), col( _c ) {}
 
@@ -431,27 +364,38 @@ class CellCoord
             col = 0;
         }
 
-        //Transforms the row and the column numerics from int32_t to coordinate string format
-        std::string ToString() const
+        // Transforms the row and the column numerics from uint32_t to coordinate string format
+        std::string ToString() const;
+        char * ToString( TConvBuf & Buffer ) const;
+        // Transforms the row and the column numerics from uint32_t to coordinate string format with '$' symbols
+        std::string ToStringAbs() const;
+        char * ToStringAbs( TConvBuf & Buffer ) const;
+
+    private:
+        template< bool AbsColAndRow >
+        inline char * ToString( char * Buffer ) const
         {
             const int32_t iAlphLen = 26;
             const char * szAlph = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-            std::string strCol;
-            strCol.append( 1, szAlph[ col % iAlphLen] ); // last
+            Buffer[ CellCoord::ColStrOffset ] = szAlph[ col % iAlphLen ];
+            char * StartPtr = Buffer + CellCoord::ColStrOffset;
             int32_t div = col / iAlphLen;
-            while( true )
+            while( div != 0 )
             {
-                if( div == 0 ) break;
-
                 div--;
-                strCol.insert( strCol.begin(), szAlph[ div % iAlphLen ] );
+                StartPtr--;
+                * StartPtr = szAlph[ div % iAlphLen ];
                 div /= iAlphLen;
             }
-            //return strCol + std::to_string( row );
-            std::ostringstream ConvStream;
-            ConvStream << row;
-            return strCol + ConvStream.str();
+            if( AbsColAndRow )
+            {
+                StartPtr--;
+                * StartPtr = '$';
+                Buffer[ CellCoord::ColStrOffset + 1 ] = '$';
+            }
+            sprintf( Buffer + CellCoord::ColStrOffset + ( AbsColAndRow ? 2 : 1 ), "%u", row );
+            return StartPtr;
         }
 };
 
@@ -518,28 +462,110 @@ class CellDataStr
 class CellDataTime
 {
     public:
-        time_t value;
         size_t style_id;
 
-    public:
-        CellDataTime() : value( 0 ), style_id( 0 ) {}
-        CellDataTime( time_t _val ) : value( _val ), style_id( 0 ) {}
+        inline CellDataTime() : style_id( 0 ), m_xlsx_val( 0.0 ) {}
+        inline CellDataTime( time_t _val, size_t _style_id = 0 ) : style_id( _style_id ), m_xlsx_val( From_time_t( _val ) ) {}
 
-        CellDataTime( time_t _val, size_t _style_id ) : value( _val ), style_id( _style_id ) {}
+        // Year must be in the range 1900 to 9999, month must be in the range 1 to 12, and day must be in the range 1 to 31.
+        // Hour must be in the range 0 to 23, minute and second must be in the range 0 to 59, and millisecond must be in the range 0 to 999.
+        inline CellDataTime( uint16_t year, uint16_t month, uint16_t day, size_t _style_id = 0 ) :
+            style_id( _style_id ), m_xlsx_val( FromGregorian( year, month, day, 0, 0, 0 ) ) {}
+        inline CellDataTime( uint16_t year, uint16_t month, uint16_t day, uint16_t hour, uint16_t minute, uint16_t second, uint16_t millisecond = 0, size_t _style_id = 0 ) :
+            style_id( _style_id ), m_xlsx_val( FromGregorian( year, month, day, hour, minute, second, millisecond ) ) {}
 
-        CellDataTime & operator=( const CellDataTime & obj )
+        inline CellDataTime & operator=( const CellDataTime & obj )
         {
-            value = obj.value;
             style_id = obj.style_id;
+            m_xlsx_val = obj.m_xlsx_val;
             return *this;
         }
 
-        CellDataTime & operator=( time_t _val )
+        inline CellDataTime & operator=( time_t _val )
         {
-            value = _val;
-            return *this;
+            return SetDateTime( _val );
         }
+
+        inline CellDataTime & SetDateTime( time_t val )
+        {
+            m_xlsx_val = From_time_t( val );
+            return * this;
+        }
+        // Year must be in the range 1900 to 9999, month must be in the range 1 to 12, and day must be in the range 1 to 31.
+        // Hour must be in the range 0 to 23, minute and second must be in the range 0 to 59, and millisecond must be in the range 0 to 999.
+        inline CellDataTime & SetDateTime( uint16_t year, uint8_t month, uint8_t day,
+                                           uint8_t hour = 0, uint8_t minute = 0, uint8_t second = 0, uint16_t millisecond = 0 )
+        {
+            m_xlsx_val = FromGregorian( year, month, day, hour, minute, second, millisecond );
+            return * this;
+        }
+
+        inline double XlsxValue() const
+        {
+            return m_xlsx_val;
+        }
+
+#ifdef _WIN32
+        inline CellDataTime( const SYSTEMTIME & win_st, size_t _style_id = 0 ) : style_id( _style_id ), m_xlsx_val( FromWinSystemTime( win_st ) ) {}
+
+        // *INDENT-OFF*   For AStyle tool
+        inline CellDataTime & SetDateTime( const SYSTEMTIME & win_st )  { m_xlsx_val = FromWinSystemTime( win_st ); return * this; }
+        inline CellDataTime & operator=( const SYSTEMTIME & win_st )    { return SetDateTime( win_st ); }
+        // *INDENT-ON*   For AStyle tool
+#endif
+
+#if defined( QT_VERSION ) && ( QT_VERSION >= 0x040000 )
+        inline CellDataTime( const QTime & t, size_t _style_id = 0 ) : style_id( _style_id ), m_xlsx_val( FromQTime( t ) ) {}
+        inline CellDataTime( const QDate & d, size_t _style_id = 0 ) : style_id( _style_id ), m_xlsx_val( FromQDate( d ) ) {}
+        inline CellDataTime( const QDateTime & dt, size_t _style_id = 0 ) : style_id( _style_id ), m_xlsx_val( FromQDateTime( dt ) ) {}
+
+        // *INDENT-OFF*   For AStyle tool
+        inline CellDataTime & SetTime( const QTime & t )            { m_xlsx_val = FromQTime( t );      return * this; }
+        inline CellDataTime & SetDate( const QDate & d )            { m_xlsx_val = FromQDate( d );      return * this; }
+        inline CellDataTime & SetDateTime( const QDateTime & dt )   { m_xlsx_val = FromQDateTime( dt ); return * this; }
+
+        inline CellDataTime & operator=( const QTime & t )      { return SetTime( t ); }
+        inline CellDataTime & operator=( const QDate & d )      { return SetDate( d ); }
+        inline CellDataTime & operator=( const QDateTime & dt ) { return SetDateTime( dt ); }
+        // *INDENT-ON*   For AStyle tool
+#endif
+
+    private:
+        double m_xlsx_val;
+
+        static double From_time_t( time_t val );
+        // Year must be in the range 1900 to 9999, month must be in the range 1 to 12, and day must be in the range 1 to 31.
+        // Hour must be in the range 0 to 23, minute and second must be in the range 0 to 59, and millisecond must be in the range 0 to 999.
+        static double FromGregorian( uint16_t year, uint16_t month, uint16_t day, uint16_t hour, uint16_t minute, uint16_t second, uint16_t millisecond = 0 );
+
+#ifdef _WIN32
+        static inline double FromWinSystemTime( const SYSTEMTIME & win_st )
+        {
+            return FromGregorian( win_st.wYear, win_st.wMonth, win_st.wDay, win_st.wHour, win_st.wMinute, win_st.wSecond, win_st.wMilliseconds );
+        }
+#endif
+
+#if defined( QT_VERSION ) && ( QT_VERSION >= 0x040000 )
+        static inline double FromQTime( const QTime & t )
+        {
+            assert( t.isValid() );
+            return FromGregorian( 1900, 1, 1, t.hour(), t.minute(), t.second(), t.msec() );
+        }
+        static inline double FromQDate( const QDate & d )
+        {
+            assert( d.isValid() );
+            return FromGregorian( d.year(), d.month(), d.day(), 0, 0, 0 );
+        }
+        static inline double FromQDateTime( const QDateTime & dt )
+        {
+            assert( dt.isValid() );
+            const QDate d = dt.date();
+            const QTime t = dt.time();
+            return FromGregorian( d.year(), d.month(), d.day(), t.hour(), t.minute(), t.second(), t.msec() );
+        }
+#endif
 };	///< cell data:style pair
+
 class CellDataInt
 {
     public:
@@ -655,15 +681,7 @@ struct Comment
         Clear();
     }
 
-    void Clear()
-    {
-        contents.clear();
-        cellRef.Clear();
-        fillColor = "#FFEFD5";	// papaya whip
-        isHidden = true;
-        x = y = 50;
-        width = height = 100;
-    }
+    void Clear();
 
     void AddContent( const Font & afont, const UniString & astring )
     {
@@ -674,6 +692,31 @@ struct Comment
     {
         return ( sheetIndex < _comm.sheetIndex );
     }
+};
+
+/// @brief  Style describes a set of styling parameter that can be used into final document
+/// @see    EBorder
+/// @see    EAlignHoriz
+/// @see    EAlignVert
+class Style
+{
+    public:
+        Font font;				///< font structure object describes font
+        Fill fill;				///< fill structure object describes fill
+        Border border;			///< border combination of border attributes
+        NumFormat numFormat;	///< numFormat structure object describes numeric cell representation
+        EAlignHoriz horizAlign;	///< horizAlign cell content horizontal alignment value
+        EAlignVert vertAlign;	///< vertAlign cell content vertical alignment value
+        bool wrapText;			///< wrapText text wrapping property
+        int textRotation;       ///< textRotation angle in degree from -90 to 90
+
+    public:
+        Style()
+        {
+            Clear();
+        }
+
+        void Clear();
 };
 
 /// @brief  This structure represents a handle to manage newly adding styles to avoid dublicating
@@ -691,54 +734,56 @@ class StyleList
             STYLE_LINK_NUM_FORMAT
         };
 
-    private:
-        size_t fmtLastId;				///< m_fmtLastId format counter. There are 164 (0 - 163) built-in numeric formats
+        struct StylePosInfo
+        {
+            EAlignHoriz horizAlign;
+            EAlignVert  vertAlign;
+            bool        wrapText;
+            int         textRotation;
 
-        std::vector<Border> borders;	///< borders set of values represent styled borders
-        std::vector<Font> fonts;		///< fonts set of fonts to be declared
-        std::vector<Fill> fills;		///< fills set of fills to be declared
-        std::vector<NumFormat> nums;	///< nums set of number formats to be declared
-        std::vector<std::vector<size_t> > styleIndexes;///< styleIndexes vector of a number triplet contains links to style parts:
+            inline bool isAllDefault() const
+            {
+                return ( horizAlign == ALIGN_H_NONE ) && ( vertAlign == ALIGN_V_NONE ) && ! wrapText && ( textRotation == 0 );
+            }
+        };
+
+    private:
+        size_t m_fmtLastId;				///< m_fmtLastId format counter. There are 164 (0 - 163) built-in numeric formats
+
+        std::vector<Border> m_borders;	///< borders set of values represent styled borders
+        std::vector<Font> m_fonts;		///< fonts set of fonts to be declared
+        std::vector<Fill> m_fills;		///< fills set of fills to be declared
+        std::vector<NumFormat> m_nums;	///< nums set of number formats to be declared
+        std::vector<std::vector<size_t> > m_styleIndexes;///< styleIndexes vector of a number triplet contains links to style parts:
         ///         first - border id in borders
         ///         second - font id in fonts
         ///         third - fill id in fills
         ///			fourth - number format id in nums
-        std::vector< std::pair<std::pair<EAlignHoriz, EAlignVert>, bool> > stylePos;///< stylePos vector of a number triplet contains style`s alignments and wrap sign:
-        ///         first - EAlignHoriz value
-        ///         second - EAlignVert value
-        ///         third - wrap boolean value
-    public:
-        StyleList()
-        {
-            fmtLastId = BUILT_IN_STYLES_NUMBER;
 
-            borders.clear();
-            fonts.clear();
-            fills.clear();
-            nums.clear();
-            styleIndexes.clear();
-            stylePos.clear();
-        }
+        std::vector< StylePosInfo > m_stylePos;///< stylePos vector of a number triplet contains style`s alignments and wrap sign:
 
-            // *INDENT-OFF*   For AStyle tool
-            /// @brief	For internal use (at the book saving)
-            inline const std::vector<Border> & GetBorders() const { return borders; }
+public:
+        StyleList();
 
-            /// @brief	For internal use (at the book saving)
-            inline const std::vector<Font> & GetFonts()	const { return fonts; }
+        // *INDENT-OFF*   For AStyle tool
+        /// @brief	For internal use (at the book saving)
+        inline const std::vector<Border> & GetBorders() const { return m_borders; }
 
-            /// @brief	For internal use (at the book saving)
-            inline const std::vector<Fill> & GetFills()	const { return fills; }
+        /// @brief	For internal use (at the book saving)
+        inline const std::vector<Font> & GetFonts()	const { return m_fonts; }
 
-            /// @brief	For internal use (at the book saving)
-            inline const std::vector<NumFormat> & GetNumFormats() const { return nums; }
+        /// @brief	For internal use (at the book saving)
+        inline const std::vector<Fill> & GetFills()	const { return m_fills; }
 
-            /// @brief	For internal use (at the book saving)
-            inline const std::vector<std::vector<size_t> > & GetIndexes() const { return styleIndexes; }
+        /// @brief	For internal use (at the book saving)
+        inline const std::vector<NumFormat> & GetNumFormats() const { return m_nums; }
 
-            /// @brief	For internal use (at the book saving)
-            inline const std::vector< std::pair<std::pair<EAlignHoriz, EAlignVert>, bool> > & GetPositions() const { return stylePos; }
-            // *INDENT-ON*   For AStyle tool
+        /// @brief	For internal use (at the book saving)
+        inline const std::vector<std::vector<size_t> > & GetIndexes() const { return m_styleIndexes; }
+
+        /// @brief	For internal use (at the book saving)
+        inline const std::vector< StylePosInfo > & GetPositions() const { return m_stylePos; }
+        // *INDENT-ON*   For AStyle tool
 
         /// @brief  Adds a new style into collection if it is not exists yet
         /// @param  style Reference to the Style structure object
@@ -746,114 +791,7 @@ class StyleList
         /// @note   If returned value is 0 - this is a default normal style and it is optional
         ///         whether is will be added into column description or not
         ///         (but better not to add to reduce size and resource consumption)
-        size_t Add( const Style & style )
-        {
-            std::vector<size_t> styleLinks( STYLE_LINK_NUMBER );
-
-            // Check border existance
-            bool addItem = true;
-            for( size_t i = 0; i < borders.size(); i++ )
-            {
-                if( borders[i] == style.border )
-                {
-                    addItem = false;
-                    styleLinks[STYLE_LINK_BORDER] = i;
-                    break;
-                }
-            }
-
-            // Add border if it is not in collection yet
-            if( addItem )
-            {
-                borders.push_back( style.border );
-                styleLinks[STYLE_LINK_BORDER] = borders.size() - 1;
-            }
-
-            // Check font existance
-            addItem = true;
-            for( size_t i = 0; i < fonts.size(); i++ )
-            {
-                if( fonts[i] == style.font )
-                {
-                    addItem = false;
-                    styleLinks[STYLE_LINK_FONT] = i;
-                    break;
-                }
-            }
-
-            // Add font if it is not in collection yet
-            if( addItem )
-            {
-                fonts.push_back( style.font );
-                styleLinks[STYLE_LINK_FONT] = fonts.size() - 1;
-            }
-
-            // Check fill existance
-            addItem = true;
-            for( size_t i = 0; i < fills.size(); i++ )
-            {
-                if( fills[i] == style.fill )
-                {
-                    addItem = false;
-                    styleLinks[STYLE_LINK_FILL] = i;
-                    break;
-                }
-            }
-
-            // Add fill if it is not in collection yet
-            if( addItem )
-            {
-                fills.push_back( style.fill );
-                styleLinks[STYLE_LINK_FILL] = fills.size() - 1;
-            }
-
-            // Check number format existance
-            addItem = true;
-            for( size_t i = 0; i < nums.size(); i++ )
-            {
-                if( nums[i] == style.numFormat )
-                {
-                    addItem = false;
-                    styleLinks[STYLE_LINK_NUM_FORMAT] = nums[ i ].id;
-                    break;
-                }
-            }
-
-            // Add number format if it is not in collection yet
-            if( addItem )
-            {
-                if( style.numFormat.id >= BUILT_IN_STYLES_NUMBER )
-                {
-                    styleLinks[STYLE_LINK_NUM_FORMAT] = fmtLastId;
-                    style.numFormat.id = fmtLastId++;
-                }
-                else
-                {
-                    styleLinks[STYLE_LINK_NUM_FORMAT] = nums.size();
-                }
-
-                nums.push_back( style.numFormat );
-            }
-
-            // Check style combination existance
-            for( size_t i = 0; i < styleIndexes.size(); i++ )
-            {
-                if( styleIndexes[i] == styleLinks &&
-                        stylePos[i].first.first == style.horizAlign &&
-                        stylePos[i].first.second == style.vertAlign &&
-                        stylePos[i].second == style.wrapText )
-                    return i;
-            }
-
-            std::pair<std::pair<EAlignHoriz, EAlignVert>, bool> pos;
-            pos.first.first = style.horizAlign;
-            pos.first.second = style.vertAlign;
-            pos.second = style.wrapText;
-            stylePos.push_back( pos );
-
-            styleIndexes.push_back( styleLinks );
-            return styleIndexes.size() - 1;
-        }
+        size_t Add( const Style & style );
 };
 
 //Struct for the drawing (chart, image) position description
@@ -890,6 +828,24 @@ class CImage
 
         CImage( const std::string & LocPath, const std::string & TempPath, ImageType AType, uint16_t AWidth, uint16_t AHeight ) :
             LocalPath( LocPath ), InternalName( TempPath ), Type( AType ), Width( AWidth ), Height( AHeight ) {}
+};
+
+// Base class for CWorksheet and CChartsheet
+class CSheet
+{
+    public:
+        virtual ~CSheet();
+        virtual const UniString & GetTitle() const = 0;
+
+        inline size_t GetIndex() const
+        {
+            return m_index;
+        }
+
+    protected:
+        const size_t  m_index;  ///< current sheet number
+
+        CSheet( size_t SheetIndex ) : m_index( SheetIndex ) {}
 };
 
 }	// namespace SimpleXlsx

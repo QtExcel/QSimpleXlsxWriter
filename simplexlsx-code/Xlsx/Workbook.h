@@ -1,6 +1,6 @@
 /*
   SimpleXlsxWriter
-  Copyright (C) 2012-2018 Pavel Akimov <oxod.pavel@gmail.com>, Alexandr Belyak <programmeralex@bk.ru>
+  Copyright (C) 2012-2020 Pavel Akimov <oxod.pavel@gmail.com>, Alexandr Belyak <programmeralex@bk.ru>
 
   This software is provided 'as-is', without any express or implied
   warranty. In no event will the authors be held liable for any damages
@@ -55,8 +55,39 @@ class CWorkbook
         size_t                      m_activeSheetIndex; ///< Index of active (opened) sheet
 
         StyleList                   m_styleList;        ///< All registered styles
+        mutable std::string         m_currencySymbol;   ///<
 
         PathManager        *        m_pathManager;      ///<
+
+        struct DefinedName
+        {
+            const SimpleXlsx::CSheet  * CSheet, * ScopeSheet;
+            std::string                 Comment, PostFix;
+
+            inline DefinedName( double AConstant, const UniString & AComment, const SimpleXlsx::CSheet * AScopeSheet ) :
+                CSheet( NULL ), ScopeSheet( AScopeSheet ), Comment( AComment )
+            {
+                std::ostringstream ConvStream;
+                ConvStream << AConstant;
+                PostFix = ConvStream.str();
+            }
+            inline DefinedName( const SimpleXlsx::CSheet & ASrcSheet, const CellCoord & Cell, const UniString & AComment, const SimpleXlsx::CSheet * AScopeSheet ) :
+                CSheet( & ASrcSheet ), ScopeSheet( AScopeSheet ), Comment( AComment ), PostFix( "!" + Cell.ToStringAbs() ) {}
+            inline DefinedName( const SimpleXlsx::CSheet & ASrcSheet, const CellCoord & CellFrom, const CellCoord & CellTo,
+                                const UniString & AComment, const SimpleXlsx::CSheet * AScopeSheet ) :
+                CSheet( & ASrcSheet ), ScopeSheet( AScopeSheet ), Comment( AComment ), PostFix( "!" + CellFrom.ToStringAbs() + ":" + CellTo.ToStringAbs() ) {}
+            inline DefinedName( const UniString & Formula, const size_t FromPos, const UniString & AComment, const SimpleXlsx::CSheet * AScopeSheet ) :
+                CSheet( NULL ), ScopeSheet( AScopeSheet ), Comment( AComment ),
+                PostFix( FromPos == 0 ? Formula.toStdString() : Formula.toStdString().substr( FromPos ) ) {}
+
+            inline std::string GetFormula() const
+            {
+                if( CSheet == NULL )
+                    return PostFix;
+                return '\'' + CSheet->GetTitle().toStdString() + '\'' + PostFix;
+            }
+        };
+        std::map< std::string, DefinedName >  m_definedNames;
 
     public:
         // @section    Constructors / destructor
@@ -74,11 +105,11 @@ class CWorkbook
         {
             return CreateSheet( NormalizeSheetName( title ) );
         }
-        inline CWorksheet & AddSheet( const std::string & title, std::vector<ColumnWidth> & colWidths )
+        inline CWorksheet & AddSheet( const std::string & title, const std::vector<ColumnWidth> & colWidths )
         {
             return CreateSheet( NormalizeSheetName( title ), colWidths );
         }
-        inline CWorksheet & AddSheet( const std::wstring & title, std::vector<ColumnWidth> & colWidths )
+        inline CWorksheet & AddSheet( const std::wstring & title, const std::vector<ColumnWidth> & colWidths )
         {
             return CreateSheet( NormalizeSheetName( title ), colWidths );
         }
@@ -91,12 +122,12 @@ class CWorkbook
             return CreateSheet( NormalizeSheetName( title ), frozenWidth, frozenHeight );
         }
         inline CWorksheet & AddSheet( const std::string & title, uint32_t frozenWidth, uint32_t frozenHeight,
-                                      std::vector<ColumnWidth> & colWidths )
+                                      const std::vector<ColumnWidth> & colWidths )
         {
             return CreateSheet( NormalizeSheetName( title ), frozenWidth, frozenHeight, colWidths );
         }
         inline CWorksheet & AddSheet( const std::wstring & title, uint32_t frozenWidth, uint32_t frozenHeight,
-                                      std::vector<ColumnWidth> & colWidths )
+                                      const std::vector<ColumnWidth> & colWidths )
         {
             return CreateSheet( NormalizeSheetName( title ), frozenWidth, frozenHeight, colWidths );
         }
@@ -134,7 +165,6 @@ class CWorkbook
         }
 
         // *INDENT-OFF*   For AStyle tool
-
         //Adds a new style into collection if it is not exists yet.
         //Return style index that should be used at data appending to a data sheet.
         inline size_t AddStyle( const Style & style )           { return m_styleList.Add( style ); }
@@ -144,11 +174,19 @@ class CWorkbook
         //Get active (opened) sheet
         inline size_t GetActiveSheetIndex() const               { return m_activeSheetIndex; }
         //Set active (opened) sheet (start from 0).
-        inline CWorkbook & SetActiveSheet( size_t index )               { m_activeSheetIndex = index; return * this; }
-        inline CWorkbook & SetActiveSheet( const CWorksheet & sheet )   { m_activeSheetIndex = sheet.GetIndex() - 1; return * this; }
-        inline CWorkbook & SetActiveSheet( const CChartsheet & sheet )  { m_activeSheetIndex = sheet.GetIndex() - 1; return * this; }
-
+        inline CWorkbook & SetActiveSheet( size_t index )           { m_activeSheetIndex = index; return * this; }
+        inline CWorkbook & SetActiveSheet( const CSheet & sheet )   { m_activeSheetIndex = sheet.GetIndex() - 1; return * this; }
         // *INDENT-ON*   For AStyle tool
+
+        // Adding a descriptive name to represent a constant value.
+        CWorkbook & AddDefinedName( const UniString & Name, double Constant, const UniString & Comment = "", const CSheet * ScopeSheet = NULL );
+        // Adding a descriptive name to represent a single cell.
+        CWorkbook & AddDefinedName( const UniString & Name, const CSheet & SrcSheet, const CellCoord & Cell, const UniString & Comment = "", const CSheet * ScopeSheet = NULL );
+        // Adding a descriptive name to represent a range of cells.
+        CWorkbook & AddDefinedName( const UniString & Name, const CSheet & SrcSheet, const CellCoord & CellFrom, const CellCoord & CellTo,
+                                    const UniString & Comment = "", const CSheet * ScopeSheet = NULL );
+        // Adding a descriptive name to represent a formula.
+        CWorkbook & AddDefinedName( const UniString & Name, const UniString & Formula, const UniString & Comment = "", const CSheet * ScopeSheet = NULL );
 
         //Save current workbook
         bool Save( const std::string & filename );
@@ -160,10 +198,10 @@ class CWorkbook
         CWorkbook & operator=( const CWorkbook & );
 
         CWorksheet & CreateSheet( const UniString & title );
-        CWorksheet & CreateSheet( const UniString & title, std::vector<ColumnWidth> & colWidths );
+        CWorksheet & CreateSheet( const UniString & title, const std::vector<ColumnWidth> & colWidths );
         CWorksheet & CreateSheet( const UniString & title, uint32_t frozenWidth, uint32_t frozenHeight );
         CWorksheet & CreateSheet( const UniString & title, uint32_t frozenWidth, uint32_t frozenHeight,
-                                  std::vector<ColumnWidth> & colWidths );
+                                  const std::vector<ColumnWidth> & colWidths );
         CWorksheet & InitWorkSheet( CWorksheet * sheet, const UniString & title );
 
         CChartsheet & CreateChartSheet( const UniString & title, EChartTypes type );
@@ -207,7 +245,7 @@ class CWorkbook
         void AddFontInfo( XMLWriter & xmlw, const Font & font, const char * FontTagName, int32_t Charset ) const;
         void AddImagesExtensions( XMLWriter & xmlw ) const;
 
-        static std::string GetFormatCodeString( const NumFormat & fmt );
+        std::string GetFormatCodeString( const NumFormat & fmt ) const;
         static std::string GetFormatCodeColor( ENumericStyleColor color );
         static std::string CurrencySymbol();
 };

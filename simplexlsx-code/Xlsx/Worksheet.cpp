@@ -1,6 +1,6 @@
 /*
   SimpleXlsxWriter
-  Copyright (C) 2012-2018 Pavel Akimov <oxod.pavel@gmail.com>, Alexandr Belyak <programmeralex@bk.ru>
+  Copyright (C) 2012-2020 Pavel Akimov <oxod.pavel@gmail.com>, Alexandr Belyak <programmeralex@bk.ru>
 
   This software is provided 'as-is', without any express or implied
   warranty. In no event will the authors be held liable for any damages
@@ -38,12 +38,13 @@ namespace SimpleXlsx
 /// @return no
 // ****************************************************************************
 template<typename T>
-static void AddCellRoutineTempl( T data, size_t style, const std::string & CellCoord, XMLWriter & xmlw )
+static CWorksheet & AddCellRoutineTempl( T data, size_t style, const std::string & CellCoord, XMLWriter & xmlw, CWorksheet * WorkSheet )
 {
     xmlw.Tag( "c" ).Attr( "r", CellCoord );
     if( style != 0 )    // default style is not necessary to sign explicitly
         xmlw.Attr( "s", style );
     xmlw.TagOnlyContent( "v", data ).End( "c" );
+    return * WorkSheet;
 }
 
 
@@ -54,10 +55,10 @@ static void AddCellRoutineTempl( T data, size_t style, const std::string & CellC
 /// @note	    The constructor creates an instance with specified sheetX.xml filename
 ///             and without any frozen panes
 // ****************************************************************************
-CWorksheet::CWorksheet( size_t index, CDrawing & drawing, PathManager & pathmanager ) : m_pathManager( pathmanager ), m_Drawing( drawing )
+CWorksheet::CWorksheet( size_t index, CDrawing & drawing, PathManager & pathmanager ) : CSheet( index ), m_pathManager( pathmanager ), m_Drawing( drawing )
 {
     std::vector<ColumnWidth> colWidths;
-    Init( index, 0, 0, colWidths );
+    Init( 0, 0, colWidths );
 }
 
 // ****************************************************************************
@@ -68,10 +69,10 @@ CWorksheet::CWorksheet( size_t index, CDrawing & drawing, PathManager & pathmana
 /// @return     no
 // ****************************************************************************
 CWorksheet::CWorksheet( size_t index, uint32_t width, uint32_t height,
-                        CDrawing & drawing, PathManager & pathmanager ) : m_pathManager( pathmanager ), m_Drawing( drawing )
+                        CDrawing & drawing, PathManager & pathmanager ) : CSheet( index ), m_pathManager( pathmanager ), m_Drawing( drawing )
 {
     std::vector<ColumnWidth> colWidths;
-    Init( index, width, height, colWidths );
+    Init( width, height, colWidths );
 }
 
 // ****************************************************************************
@@ -83,9 +84,9 @@ CWorksheet::CWorksheet( size_t index, uint32_t width, uint32_t height,
 ///             and without any frozen panes
 // ****************************************************************************
 CWorksheet::CWorksheet( size_t index, const std::vector<ColumnWidth> & colWidths,
-                        CDrawing & drawing, PathManager & pathmanager ) : m_pathManager( pathmanager ), m_Drawing( drawing )
+                        CDrawing & drawing, PathManager & pathmanager ) : CSheet( index ), m_pathManager( pathmanager ), m_Drawing( drawing )
 {
-    Init( index, 0, 0, colWidths );
+    Init( 0, 0, colWidths );
 }
 
 // ****************************************************************************
@@ -97,9 +98,9 @@ CWorksheet::CWorksheet( size_t index, const std::vector<ColumnWidth> & colWidths
 /// @return     no
 // ****************************************************************************
 CWorksheet::CWorksheet( size_t index, uint32_t width, uint32_t height, const std::vector<ColumnWidth> & colWidths,
-                        CDrawing & drawing, PathManager & pathmanager ) : m_pathManager( pathmanager ), m_Drawing( drawing )
+                        CDrawing & drawing, PathManager & pathmanager ) : CSheet( index ),  m_pathManager( pathmanager ), m_Drawing( drawing )
 {
-    Init( index, width, height, colWidths );
+    Init( width, height, colWidths );
 }
 
 // ****************************************************************************
@@ -113,19 +114,17 @@ CWorksheet::~CWorksheet()
 
 // ****************************************************************************
 /// @brief  Initializes internal variables and creates a header of a sheet xml tree
-/// @param  index index of a sheet to be created (for example, sheet1.xml)
 /// @param  frozenWidth frozen pane with
 /// @param  frozenHeight frozen pane height
 /// @param	colWidths list of pairs colNumber:Width
 /// @return no
 // ****************************************************************************
-void CWorksheet::Init( size_t index, uint32_t frozenWidth, uint32_t frozenHeight, const std::vector<ColumnWidth> & colWidths )
+void CWorksheet::Init( uint32_t frozenWidth, uint32_t frozenHeight, const std::vector<ColumnWidth> & colWidths )
 {
     m_isOk = true;
     m_row_opened = false;
     m_current_column = 0;
     m_offset_column = 0;
-    m_index = index;
     m_title = "Sheet 1";
     m_withFormula = false;
     m_withComments = false;
@@ -170,10 +169,12 @@ void CWorksheet::Init( size_t index, uint32_t frozenWidth, uint32_t frozenHeight
 // ****************************************************************************
 CWorksheet & CWorksheet::BeginRow( double height )
 {
-    if( m_row_opened ) m_XMLWriter->End( "row" );
+    if( m_row_opened )
+        m_XMLWriter->End( "row" );
     m_XMLWriter->Tag( "row" ).Attr( "r", ++m_row_index ).Attr( "x14ac:dyDescent", 0.25 );
 
-    if( height > 0 ) m_XMLWriter->Attr( "ht", height ).Attr( "customHeight", 1 );
+    if( height > 0.0 )
+        m_XMLWriter->Attr( "ht", height ).Attr( "customHeight", 1 );
 
     m_current_column = 0;
     m_row_opened = true;
@@ -198,50 +199,44 @@ CWorksheet & CWorksheet::EndRow()
 /// @param	data reference to data
 /// @return	Reference to this object
 // ****************************************************************************
-CWorksheet & CWorksheet::AddCell( const std::string & value, size_t style_id )
+CWorksheet & CWorksheet::AddCell( const char * value, size_t style_id )
 {
-    if( value != "" )
+    if( value[ 0 ] != '\0' )
     {
-        const std::string & szCoord = CellCoord( m_row_index, m_offset_column + m_current_column ).ToString();
+        const std::string szCoord = CellCoord( m_row_index, m_offset_column + m_current_column ).ToString();
         m_XMLWriter->Tag( "c" ).Attr( "r", szCoord );
 
-        if( style_id != 0 ) m_XMLWriter->Attr( "s", style_id );  // default style is not necessary to sign explisitly
+        if( style_id != 0 )
+            m_XMLWriter->Attr( "s", style_id );  // default style is not necessary to sign explisitly
 
-        if( value[0] == '=' )
+        if( value[ 0 ] == '=' )
         {
-            m_XMLWriter->TagOnlyContent( "f", value.substr( 1, value.length() - 1 ) );
+            m_XMLWriter->TagOnlyContent( "f", value + 1 );
 
             m_withFormula = true;
             m_calcChain.push_back( szCoord );
         }
         else
         {
-            if( m_sharedStrings != NULL )
+            assert( m_sharedStrings != NULL );
+            uint64_t str_index = 0;
+            std::string StdStrVal( value );
+            std::map<std::string, uint64_t>::iterator it = m_sharedStrings->find( StdStrVal );
+            if( it == m_sharedStrings->end() )
             {
-                uint64_t str_index = 0;
-                std::map<std::string, uint64_t>::iterator it = m_sharedStrings->find( value );
-                if( it == m_sharedStrings->end() )
-                {
-                    str_index = m_sharedStrings->size();
-                    ( *m_sharedStrings )[ value ] = str_index;
-                }
-                else
-                {
-                    str_index = it->second;
-                }
-                m_XMLWriter->Attr( "t", "s" ).TagOnlyContent( "v", str_index );
+                str_index = m_sharedStrings->size();
+                ( *m_sharedStrings )[ StdStrVal ] = str_index;
             }
-            else
-            {
-                m_XMLWriter->TagOnlyContent( "v", value );
-            }
+            else str_index = it->second;
+            m_XMLWriter->Attr( "t", "s" ).TagOnlyContent( "v", str_index );
         }
         m_XMLWriter->End( "c" );
     }
     ///  empty cell with style   ---
     else if( style_id != 0 )
     {
-        const std::string & szCoord = CellCoord( m_row_index, m_offset_column + m_current_column ).ToString();
+        CellCoord::TConvBuf Buffer;
+        const char * szCoord = CellCoord( m_row_index, m_offset_column + m_current_column ).ToString( Buffer );
         m_XMLWriter->Tag( "c" ).Attr( "r", szCoord ).Attr( "s", style_id ).End( "c" );
     }
     ///  empty cell with style   ---
@@ -256,54 +251,37 @@ CWorksheet & CWorksheet::AddCell( const std::string & value, size_t style_id )
 // ****************************************************************************
 CWorksheet & CWorksheet::AddCell( const CellDataTime & data )
 {
-    const int64_t secondsFrom1900to1970 = 2208988800u;
-    const double excelOneSecond = 0.0000115740740740741;
-
-    struct tm * t = localtime( & data.value );
-
-    time_t timeSinceEpoch = t->tm_sec + t->tm_min * 60 + t->tm_hour * 3600 + t->tm_yday * 86400 +
-                            ( t->tm_year - 70 ) * 31536000 + ( ( t->tm_year - 69 ) / 4 ) * 86400 -
-                            ( ( t->tm_year - 1 ) / 100 ) * 86400 + ( ( t->tm_year + 299 ) / 400 ) * 86400;
-
-    double CalcedValue = excelOneSecond * ( secondsFrom1900to1970 + timeSinceEpoch ) + 2;
-    AddCellRoutineTempl( CalcedValue, data.style_id, GetCellCoordStrAndIncColumn(), * m_XMLWriter );
-    return * this;
+    return AddCellRoutineTempl( data.XlsxValue(), data.style_id, GetCellCoordStrAndIncColumn(), * m_XMLWriter, this );
 }
 
 CWorksheet & CWorksheet::AddCell( int32_t value, size_t style_id )
 {
-    AddCellRoutineTempl( value, style_id, GetCellCoordStrAndIncColumn(), * m_XMLWriter );
-    return * this;
+    return AddCellRoutineTempl( value, style_id, GetCellCoordStrAndIncColumn(), * m_XMLWriter, this );
 }
 
 CWorksheet & CWorksheet::AddCell( uint32_t value, size_t style_id )
 {
-    AddCellRoutineTempl( value, style_id, GetCellCoordStrAndIncColumn(), * m_XMLWriter );
-    return * this;
+    return AddCellRoutineTempl( value, style_id, GetCellCoordStrAndIncColumn(), * m_XMLWriter, this );
 }
 
 CWorksheet & CWorksheet::AddCell( int64_t value, size_t style_id )
 {
-    AddCellRoutineTempl( value, style_id, GetCellCoordStrAndIncColumn(), * m_XMLWriter );
-    return * this;
+    return AddCellRoutineTempl( value, style_id, GetCellCoordStrAndIncColumn(), * m_XMLWriter, this );
 }
 
 CWorksheet & CWorksheet::AddCell( uint64_t value, size_t style_id )
 {
-    AddCellRoutineTempl( value, style_id, GetCellCoordStrAndIncColumn(), * m_XMLWriter );
-    return * this;
+    return AddCellRoutineTempl( value, style_id, GetCellCoordStrAndIncColumn(), * m_XMLWriter, this );
 }
 
 CWorksheet & CWorksheet::AddCell( float value, size_t style_id )
 {
-    AddCellRoutineTempl( value, style_id, GetCellCoordStrAndIncColumn(), * m_XMLWriter );
-    return * this;
+    return AddCellRoutineTempl( value, style_id, GetCellCoordStrAndIncColumn(), * m_XMLWriter, this );
 }
 
 CWorksheet & CWorksheet::AddCell( double value, size_t style_id )
 {
-    AddCellRoutineTempl( value, style_id, GetCellCoordStrAndIncColumn(), * m_XMLWriter );
-    return * this;
+    return AddCellRoutineTempl( value, style_id, GetCellCoordStrAndIncColumn(), * m_XMLWriter, this );
 }
 
 // ****************************************************************************
@@ -318,7 +296,7 @@ void CWorksheet::AddFrozenPane( uint32_t width, uint32_t height )
     if( width != 0 ) m_XMLWriter->Attr( "xSplit", width );
     if( height != 0 ) m_XMLWriter->Attr( "ySplit", height );
 
-    const std::string & szCoord = CellCoord( height + 1, width ).ToString();
+    const std::string szCoord = CellCoord( height + 1, width ).ToString();
     m_XMLWriter->Attr( "topLeftCell", szCoord );
 
     const char * ActivePane = "activePane";
@@ -330,9 +308,10 @@ void CWorksheet::AddFrozenPane( uint32_t width, uint32_t height )
 
     if( ( width > 0 ) && ( height > 0 ) )
     {
-        const std::string & szCoordBL = CellCoord( height + 1, width - 1 ).ToString();
-        const std::string & szCoordTR = CellCoord( height, width ).ToString();
+        CellCoord::TConvBuf Buffer;
+        const char * szCoordTR = CellCoord( height, width ).ToString( Buffer );
         m_XMLWriter->TagL( "selection" ).Attr( "pane", "topRight" ).Attr( "activeCell", szCoordTR ).Attr( "sqref", szCoordTR ).EndL();
+        const char * szCoordBL = CellCoord( height + 1, width - 1 ).ToString( Buffer );
         m_XMLWriter->TagL( "selection" ).Attr( "pane", "bottomLeft" ).Attr( "activeCell", szCoordBL ).Attr( "sqref", szCoordBL ).EndL();
         m_XMLWriter->TagL( "selection" ).Attr( "pane", "bottomRight" ).Attr( "activeCell", szCoord ).Attr( "sqref", szCoord ).EndL();
     }

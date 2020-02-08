@@ -1,6 +1,6 @@
 /*
   SimpleXlsxWriter
-  Copyright (C) 2012-2018 Pavel Akimov <oxod.pavel@gmail.com>, Alexandr Belyak <programmeralex@bk.ru>
+  Copyright (C) 2012-2020 Pavel Akimov <oxod.pavel@gmail.com>, Alexandr Belyak <programmeralex@bk.ru>
 
   This software is provided 'as-is', without any express or implied
   warranty. In no event will the authors be held liable for any damages
@@ -24,6 +24,8 @@
 
 #include <stdlib.h>
 
+#include "SimpleXlsxDef.h"
+
 // ****************************************************************************
 /// @brief  The following namespace contains declarations of a number of classes
 ///         which allow writing .xlsx files with formulae and charts
@@ -41,20 +43,16 @@ namespace SimpleXlsx
     /// @see    EChartTypes supplying types of charts
     /// @note   All created chartsheets inside workbook will be allocated on its` own sheet
     // ****************************************************************************
-    class CChartsheet
+    class CChartsheet : public CSheet
     {
         public:
-            //Index of Chartsheet
-            inline size_t GetIndex() const
-            {
-                return m_index;
-            }
-
             //Reference to the Chart
             inline CChart & Chart()
             {
                 return m_Chart;
             }
+
+            virtual const UniString & GetTitle() const;
 
         protected:
             CChartsheet( size_t index, CChart & chart, CDrawing & drawing, PathManager & pathmanager );
@@ -65,7 +63,6 @@ namespace SimpleXlsx
             CChartsheet( const CChartsheet & that );
             CChartsheet & operator=( const CChartsheet & );
 
-            size_t              m_index;            ///< chart ID number
             CChart       &      m_Chart;            ///< Reference to chart
             CDrawing      &     m_Drawing;          ///< Reference to drawing object
             PathManager    &    m_pathManager;      ///< reference to XML PathManager

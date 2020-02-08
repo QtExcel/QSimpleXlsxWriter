@@ -4,10 +4,8 @@
 
 using namespace SimpleXlsx;
 
-int main( int argc, char * argv[] )
+int main()
 {
-    ( void )argc; ( void )argv;
-
     setlocale( LC_ALL, "" );
 
     CWorkbook Book( "Incognito" );
@@ -21,7 +19,6 @@ int main( int argc, char * argv[] )
     Sheet.AddCell( "Scaled image:" );
     Sheet.EndRow();
 
-    // TODO: set image path
     Book.AddImage( Sheet, "Image.gif", DrawingPoint( 0, 1 ) );
     Book.AddImage( Sheet, "Image.jpg", DrawingPoint( 0, 4 ) );
     Book.AddImage( Sheet, "Image.png", DrawingPoint( 0, 7 ) );
@@ -33,6 +30,5 @@ int main( int argc, char * argv[] )
 
     if( Book.Save( "Images.xlsx" ) ) std::cout << "The book has been saved successfully" << std::endl;
     else std::cout << "The book saving has been failed" << std::endl;
-
     return 0;
 }
