@@ -1,6 +1,6 @@
 /*
   SimpleXlsxWriter
-  Copyright (C) 2012-2018 Pavel Akimov <oxod.pavel@gmail.com>, Alexandr Belyak <programmeralex@bk.ru>
+  Copyright (C) 2012-2020 Pavel Akimov <oxod.pavel@gmail.com>, Alexandr Belyak <programmeralex@bk.ru>
 
   This software is provided 'as-is', without any express or implied
   warranty. In no event will the authors be held liable for any damages
@@ -23,7 +23,6 @@
 
 #include "Chart.h"
 #include "Drawing.h"
-#include "SimpleXlsxDef.h"
 #include "Worksheet.h"
 #include "XlsxHeaders.h"
 
@@ -39,9 +38,14 @@ namespace SimpleXlsx
     /// @param	drawing is a references for correspond drawing
     /// @param  Parent is a pointer to parent CWorkbook
     /// @return no
-    // ****************************************************************************
-    CChartsheet::CChartsheet( size_t index, CChart & chart, CDrawing & drawing, PathManager & pathmanager ) :
-        m_index( index ), m_Chart( chart ), m_Drawing( drawing ), m_pathManager( pathmanager )
+// ****************************************************************************
+const UniString &CChartsheet::GetTitle() const
+{
+    return m_Chart.GetTitle();
+}
+
+CChartsheet::CChartsheet( size_t index, CChart & chart, CDrawing & drawing, PathManager & pathmanager ) :
+        CSheet( index ), m_Chart( chart ), m_Drawing( drawing ), m_pathManager( pathmanager )
     {
     }
 

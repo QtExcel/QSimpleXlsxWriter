@@ -1,6 +1,6 @@
 /*
   SimpleXlsxWriter
-  Copyright (C) 2012-2018 Pavel Akimov <oxod.pavel@gmail.com>, Alexandr Belyak <programmeralex@bk.ru>
+  Copyright (C) 2012-2020 Pavel Akimov <oxod.pavel@gmail.com>, Alexandr Belyak <programmeralex@bk.ru>
 
   This software is provided 'as-is', without any express or implied
   warranty. In no event will the authors be held liable for any damages
@@ -951,8 +951,9 @@ void CChart::AddDataLabels( XMLWriter & xmlw, const CChart::DataLabels & dataLab
 
 std::string CChart::CellRangeString( const std::string & Title, const CellCoord & CellFrom, const CellCoord & szCellTo )
 {
+    CellCoord::TConvBuf Buffer;
     std::stringstream RangeStream;
-    RangeStream << '\'' << Title << "\'!$" << CellFrom.ToString() << ":$" << szCellTo.ToString();
+    RangeStream << '\'' << Title << "\'!$" << CellFrom.ToString( Buffer ) << ":$" << szCellTo.ToString( Buffer );
     return RangeStream.str();
 }
 

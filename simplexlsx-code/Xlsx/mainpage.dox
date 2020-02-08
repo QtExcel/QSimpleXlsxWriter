@@ -11,9 +11,9 @@ The library is written in C++ with using STL functionality and based on the ZIP 
 http://www.codeproject.com/Articles/7530/Zip-Utils-clean-elegant-simple-C-Win32
 
 Key features:
-- Cell styles: fonts, fills, borders, alignment, multirow text
+- Cell styles: fonts, fills, borders, alignment, multirow text, text rotation
 - Cell formats: text, numeric, dates and times, custom formats
-- Formulae recognition (without formula`s content verification)
+- Formulae recognition (without formula`s content verification), defined names
 - Multi-sheets
 - Charts with customizable parameters (on data sheet or separate sheet): linear, bar, scatter
 - Images on the worksheet: gif, jpg, jpeg, png, tif, tiff

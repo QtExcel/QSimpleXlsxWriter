@@ -1,6 +1,6 @@
 /*
   SimpleXlsxWriter
-  Copyright (C) 2012-2018 Pavel Akimov <oxod.pavel@gmail.com>, Alexandr Belyak <programmeralex@bk.ru>
+  Copyright (C) 2012-2020 Pavel Akimov <oxod.pavel@gmail.com>, Alexandr Belyak <programmeralex@bk.ru>
 
   This software is provided 'as-is', without any express or implied
   warranty. In no event will the authors be held liable for any damages
@@ -40,7 +40,7 @@ class XMLWriter;
 /// @brief	The class CWorksheet is used for creation and population
 ///         .xlsx file sheet table with data
 // ****************************************************************************
-class CWorksheet
+class CWorksheet : public CSheet
 {
     public:
         enum EPageOrientation
@@ -55,7 +55,6 @@ class CWorksheet
         std::map<std::string, uint64_t> * m_sharedStrings; ///< pointer to the list of string supposed to be into shared area
         std::vector<Comment> *	m_comments;         ///< pointer to the vector of comments
         std::list<std::string>  m_mergedCells;	///< list of merged cells` ranges (e.g. A1:B2)
-        size_t					m_index;            ///< current sheet number
         UniString             	m_title;            ///< page title
         bool                    m_withFormula;      ///< indicates whether the sheet contains formulae
         bool					m_withComments;		///< indicates whether the sheet contains any comments
@@ -77,11 +76,10 @@ class CWorksheet
         // @section    SEC_INTERNAL Interclass internal interface methods
         inline bool     IsThereComment() const      { return m_withComments; }
         inline bool     IsThereFormula() const      { return m_withFormula; }
-        inline size_t   GetIndex() const            { return m_index; }
         inline const CWorksheet & GetCalcChain( std::vector<std::string> & chain ) const  { chain = m_calcChain; return * this; }
 
         // @section    SEC_USER User interface
-        inline const UniString & GetTitle() const                           { return m_title; }
+        virtual const UniString & GetTitle() const                          { return m_title; }
         inline CWorksheet & SetTitle( const UniString & title )             { if( ! title.empty() ) m_title = title; return * this; }
 
         inline CWorksheet & SetPageOrientation( EPageOrientation orient )   { m_page_orientation = orient; return * this; }
@@ -100,15 +98,15 @@ class CWorksheet
 
         // *INDENT-OFF*   For AStyle tool
 
-        CWorksheet & BeginRow( double height = 0 );
+        CWorksheet & BeginRow( double height = 0.0 );
         CWorksheet & EndRow();
 
         inline CWorksheet & AddCell()                                       { m_current_column++; return * this; }
         inline CWorksheet & AddEmptyCells( uint32_t Count )                 { m_current_column += Count; return * this; }
 
-        CWorksheet & AddCell( const std::string & value, size_t style_id = 0 );
+        CWorksheet & AddCell( const char * value, size_t style_id = 0 );
+        CWorksheet & AddCell( const std::string & value, size_t style_id = 0 )  { return AddCell( value.c_str(), style_id ); }
         inline CWorksheet & AddCell( const CellDataStr & data )                 { return AddCell( data.value, data.style_id ); }
-        CWorksheet & AddCell( const char * value, size_t style_id = 0 )         { return AddCell( std::string( value ), style_id ); }
         CWorksheet & AddCell( const std::wstring & value, size_t style_id = 0 ) { return AddCell( UTF8Encoder::From_wstring( value ), style_id ); }
         inline CWorksheet & AddCells( const std::vector<CellDataStr> & data );
 
@@ -138,8 +136,33 @@ class CWorksheet
         CWorksheet & AddRow( const std::vector<CellDataTime> & data, uint32_t offset = 0, double height = 0.0 ) { return AddRowTempl( data, offset, height ); }
         CWorksheet & AddRow( const std::vector<CellDataInt> & data, uint32_t offset = 0, double height = 0.0 )  { return AddRowTempl( data, offset, height ); }
         CWorksheet & AddRow( const std::vector<CellDataUInt> & data, uint32_t offset = 0, double height = 0.0 ) { return AddRowTempl( data, offset, height ); }
-        CWorksheet & AddRow( const std::vector<CellDataDbl> & data, uint32_t offset = 0, double height = 0.0 )  { return AddRowTempl( data, offset, height ); }
         CWorksheet & AddRow( const std::vector<CellDataFlt> & data, uint32_t offset = 0, double height = 0.0 )  { return AddRowTempl( data, offset, height ); }
+        CWorksheet & AddRow( const std::vector<CellDataDbl> & data, uint32_t offset = 0, double height = 0.0 )  { return AddRowTempl( data, offset, height ); }
+
+        CWorksheet & AddEmptyRow( double height = 0.0 ) { return BeginRow( height ).EndRow(); }
+        CWorksheet & AddEmptyRows( size_t count, double height = 0.0 ) { for( size_t i = 0; i < count; ++i ) AddEmptyRow( height ); return * this; }
+
+        CWorksheet & AddSimpleRow( const CellDataStr & val, uint32_t offset = 0, double height = 0.0 )  { return AddSimpleRow( val.value, val.style_id, offset, height ); }
+        CWorksheet & AddSimpleRow( const CellDataInt & val, uint32_t offset = 0, double height = 0.0 )  { return AddSimpleRow( val.value, val.style_id, offset, height ); }
+        CWorksheet & AddSimpleRow( const CellDataUInt & val, uint32_t offset = 0, double height = 0.0 ) { return AddSimpleRow( val.value, val.style_id, offset, height ); }
+        CWorksheet & AddSimpleRow( const CellDataFlt & val, uint32_t offset = 0, double height = 0.0 )  { return AddSimpleRow( val.value, val.style_id, offset, height ); }
+        CWorksheet & AddSimpleRow( const CellDataDbl & val, uint32_t offset = 0, double height = 0.0 )  { return AddSimpleRow( val.value, val.style_id, offset, height ); }
+
+        CWorksheet & AddSimpleRow( const CellDataTime & val, uint32_t offset = 0, double height = 0.0 )
+        {
+            return BeginRow( height ).AddEmptyCells( offset ).AddCell( val ).EndRow();
+        }
+
+        CWorksheet & AddSimpleRow( const char * val, size_t style_id = 0, uint32_t offset = 0, double height = 0.0 )
+        {
+            return BeginRow( height ).AddEmptyCells( offset ).AddCell( val, style_id ).EndRow();
+        }
+
+        template< typename T >
+        CWorksheet & AddSimpleRow( const T & val, size_t style_id = 0, uint32_t offset = 0, double height = 0.0 )
+        {
+            return BeginRow( height ).AddEmptyCells( offset ).AddCell( val, style_id ).EndRow();
+        }
 
         CWorksheet & MergeCells( CellCoord cellFrom, CellCoord cellTo );
 
@@ -169,12 +192,12 @@ class CWorksheet
 
         bool Save();
 
-            // *INDENT-OFF*   For AStyle tool
-            inline void     SetSharedStr( std::map<std::string, uint64_t> * share ) { m_sharedStrings = share; }
-            inline void     SetComments( std::vector<Comment> * share )             { m_comments = share; }
-            // *INDENT-ON*   For AStyle tool
+        // *INDENT-OFF*   For AStyle tool
+        inline void     SetSharedStr( std::map<std::string, uint64_t> * share ) { m_sharedStrings = share; }
+        inline void     SetComments( std::vector<Comment> * share )             { m_comments = share; }
+        // *INDENT-ON*   For AStyle tool
 
-        void Init( size_t index, uint32_t frozenWidth, uint32_t frozenHeight, const std::vector<ColumnWidth> & colHeights );
+        void Init( uint32_t frozenWidth, uint32_t frozenHeight, const std::vector<ColumnWidth> & colHeights );
         void AddFrozenPane( uint32_t width, uint32_t height );
 
         template<typename T>

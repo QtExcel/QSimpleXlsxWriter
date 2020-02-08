@@ -1,6 +1,6 @@
 /*
   SimpleXlsxWriter
-  Copyright (C) 2012-2018 Pavel Akimov <oxod.pavel@gmail.com>, Alexandr Belyak <programmeralex@bk.ru>
+  Copyright (C) 2012-2020 Pavel Akimov <oxod.pavel@gmail.com>, Alexandr Belyak <programmeralex@bk.ru>
 
   This software is provided 'as-is', without any express or implied
   warranty. In no event will the authors be held liable for any damages
@@ -159,13 +159,13 @@ class CChart
             public:
                 typedef typename Container::const_iterator const_iterator;
 
-                    // *INDENT-OFF*   For AStyle tool
-                    inline const_iterator begin() const { return m_Points.begin(); }
-                    inline const_iterator end() const   { return m_Points.end(); }
+                // *INDENT-OFF*   For AStyle tool
+                inline const_iterator begin() const { return m_Points.begin(); }
+                inline const_iterator end() const   { return m_Points.end(); }
 
-                    inline bool IsValid() const         { return m_Points.size() >= 2; }
-                    inline void Clear()                 { m_Points.clear(); }
-                    // *INDENT-ON*   For AStyle tool
+                inline bool IsValid() const         { return m_Points.size() >= 2; }
+                inline void Clear()                 { m_Points.clear(); }
+                // *INDENT-ON*   For AStyle tool
 
                 inline void Add( int Percent, const std::string & Color )
                 {

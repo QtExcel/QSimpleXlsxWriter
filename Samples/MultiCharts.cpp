@@ -1,8 +1,8 @@
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
 #include <iostream>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
 
 #include <Xlsx/Chart.h>
 #include <Xlsx/Chartsheet.h>
@@ -10,10 +10,8 @@
 
 using namespace SimpleXlsx;
 
-int main( int argc, char * argv[] )
+int main()
 {
-    ( void )argc; ( void )argv;
-
     setlocale( LC_ALL, "" );
 
     time_t CurrentTime = time( NULL );
@@ -38,12 +36,10 @@ int main( int argc, char * argv[] )
         data2.push_back( cellDbl );
     }
 
-    FirstDataSheet.AddRow( data1 ); // data can be added by row or by cell
-    FirstDataSheet.AddRow( data2 );
+    FirstDataSheet.AddRow( data1 ).AddRow( data2 ); // data can be added by row or by cell
 
     // adding chart sheet to the workbook the reference to a newly created object is returned
     CChartsheet & ChartSheet = Book.AddChartSheet( "Line Chart", CHART_LINEAR );
-
     // create series object, that contains most chart settings
     CChart::Series ser;
     // leave category sequence (X axis) not specified (optional) - MS Excel will generate the default sequence automatically
@@ -78,14 +74,9 @@ int main( int argc, char * argv[] )
     OnSheetChart2.AddSeries( ser2 );
     OnSheetChart2.SetLegendPos( CChart::POS_LEFT_ASIDE );
 
-
     CWorksheet & SecondDataSheet = Book.AddSheet( "Data2" );
     for( int i = 0; i < DataCellCount; i++ )
-    {
-        SecondDataSheet.BeginRow();
-        SecondDataSheet.AddCell( sin( i * 0.5 ) + 1 );
-        SecondDataSheet.EndRow();
-    }
+        SecondDataSheet.BeginRow().AddCell( sin( i * 0.5 ) + 1 ).EndRow();
 
     CChart::Series ser3;
     ser3.catSheet = NULL;
@@ -101,9 +92,7 @@ int main( int argc, char * argv[] )
 
     Book.SetActiveSheet( ChartSheet );
 
-
     if( Book.Save( "MultiCharts.xlsx" ) ) std::cout << "The book has been saved successfully" << std::endl;
     else std::cout << "The book saving has been failed" << std::endl;
-
     return 0;
 }
