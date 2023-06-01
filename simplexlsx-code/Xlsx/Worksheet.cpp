@@ -351,6 +351,18 @@ CWorksheet & CWorksheet::MergeCells( CellCoord cellFrom, CellCoord cellTo )
 }
 
 // ****************************************************************************
+/// @brief  Adds an auto filter to the top row of the given area
+/// @param  cellTopLeft     (row value from 1, col value from 0)
+/// @param  cellBottomRight (row value from 1, col value from 0)
+/// @return Reference to this object
+// ****************************************************************************
+CWorksheet& CWorksheet::AutoFilter(CellCoord cellTopLeft, CellCoord cellBottomRight) {
+    // <autoFilter ref="A1:A3"/>
+    m_autoFilter = cellTopLeft.ToString() + ':' + cellBottomRight.ToString();
+    return * this;
+}
+
+// ****************************************************************************
 ///	@brief	Receives next to write cell`s coordinates
 /// @param	currCell (row value from 1, col value from 0)
 /// @return	Reference to this object
@@ -377,6 +389,12 @@ bool CWorksheet::Save()
             m_XMLWriter->TagL( "mergeCell" ).Attr( "ref", * it ).EndL();
         m_XMLWriter->End( "mergeCells" );
     }
+
+    if( !m_autoFilter.empty() ) {
+        m_XMLWriter->Tag( "autoFilter" ).Attr( "ref", m_autoFilter);
+        m_XMLWriter->End( "autoFilter" );
+    }
+
     std::string sOrient;
     if( m_page_orientation == PAGE_PORTRAIT ) sOrient = "portrait";
     else if( m_page_orientation == PAGE_LANDSCAPE ) sOrient = "landscape";
