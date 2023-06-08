@@ -346,7 +346,19 @@ void CWorksheet::AddRowFooter() const
 CWorksheet & CWorksheet::MergeCells( CellCoord cellFrom, CellCoord cellTo )
 {
     if( ( cellFrom.row != 0 ) && ( cellTo.row != 0 ) )
-        m_mergedCells.push_back( cellFrom.ToString() + ':' + cellTo.ToString() );
+    { m_mergedCells.push_back( cellFrom.ToString() + ':' + cellTo.ToString() ); }
+    return * this;
+}
+
+// ****************************************************************************
+/// @brief  Adds an auto filter to the top row of the given area
+/// @param  cellTopLeft     (row value from 1, col value from 0)
+/// @param  cellBottomRight (row value from 1, col value from 0)
+/// @return Reference to this object
+// ****************************************************************************
+CWorksheet& CWorksheet::AutoFilter(CellCoord cellTopLeft, CellCoord cellBottomRight) {
+    // <autoFilter ref="A1:A3"/>
+    m_autoFilter = cellTopLeft.ToString() + ':' + cellBottomRight.ToString();
     return * this;
 }
 
@@ -377,9 +389,16 @@ bool CWorksheet::Save()
             m_XMLWriter->TagL( "mergeCell" ).Attr( "ref", * it ).EndL();
         m_XMLWriter->End( "mergeCells" );
     }
+
+    if( !m_autoFilter.empty() ) {
+        m_XMLWriter->Tag( "autoFilter" ).Attr( "ref", m_autoFilter);
+        m_XMLWriter->End( "autoFilter" );
+    }
+
+
     std::string sOrient;
-    if( m_page_orientation == PAGE_PORTRAIT ) sOrient = "portrait";
-    else if( m_page_orientation == PAGE_LANDSCAPE ) sOrient = "landscape";
+    if( m_page_orientation == PAGE_PORTRAIT ) { sOrient = "portrait"; }
+    else if( m_page_orientation == PAGE_LANDSCAPE ) { sOrient = "landscape"; }
 
     m_XMLWriter->TagL( "pageMargins" ).Attr( "left", 0.7 ).Attr( "right", 0.7 ).Attr( "top", 0.75 );
     /*                  */m_XMLWriter->Attr( "bottom", 0.75 ).Attr( "header", 0.3 ).Attr( "footer", 0.3 ).EndL();
@@ -407,7 +426,7 @@ bool CWorksheet::Save()
     delete m_XMLWriter;
     m_XMLWriter = NULL;
 
-    if( ( rId != 1 ) && ! SaveSheetRels() ) return false;
+    if( ( rId != 1 ) && ! SaveSheetRels() ) { return false; }
 
     m_isOk = false;
     return true;

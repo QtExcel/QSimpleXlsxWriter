@@ -55,6 +55,7 @@ class CWorksheet : public CSheet
         std::map<std::string, uint64_t> * m_sharedStrings; ///< pointer to the list of string supposed to be into shared area
         std::vector<Comment> *	m_comments;         ///< pointer to the vector of comments
         std::list<std::string>  m_mergedCells;	///< list of merged cells` ranges (e.g. A1:B2)
+    std::string             m_autoFilter;       ///< autofilter range (e.g. A1:B2)
         UniString             	m_title;            ///< page title
         bool                    m_withFormula;      ///< indicates whether the sheet contains formulae
         bool					m_withComments;		///< indicates whether the sheet contains any comments
@@ -165,6 +166,8 @@ class CWorksheet : public CSheet
         }
 
         CWorksheet & MergeCells( CellCoord cellFrom, CellCoord cellTo );
+
+        CWorksheet & AutoFilter( CellCoord cellTopLeft, CellCoord cellBottomRight);
 
         const CWorksheet & GetCurrentCellCoord( CellCoord & currCell ) const;
         inline uint32_t CurrentRowIndex() const     { return m_row_index; }
