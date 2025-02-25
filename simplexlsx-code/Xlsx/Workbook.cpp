@@ -105,7 +105,15 @@ CWorkbook::CWorkbook( const UniString & UserName ) : m_UserName( UserName )
 #ifdef _WIN32
         m_UserName = _wgetenv( L"USERNAME" );
 #else
-        m_UserName = getenv( "USERNAME" );
+      
+      // issue https://github.com/QtExcel/QSimpleXlsxWriter/issues/10
+      // {{ 
+      // m_UserName = getenv( "USERNAME" );
+      
+       if (userName != NULL)
+           m_UserName = userName;        
+       // }}
+      
 #endif
         if( m_UserName.empty() ) m_UserName = "Unknown";
     }
